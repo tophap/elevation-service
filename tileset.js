@@ -56,9 +56,9 @@ class FileTileSet extends TileSet {
 }
 
 class S3TileSet extends TileSet {
-  constructor(s3_base_url, options) {
+  constructor(options, s3_base_url) {
     super(options);
-    this.baseUrl = s3_base_url || DEFAULT_S3_BASE_URL;
+    this.baseUrl = s3_base_url ?? DEFAULT_S3_BASE_URL;
   }
 
   async _getTile(lat, lng) {

@@ -1,3 +1,6 @@
+# FORKED FROM racemap/elevation-service
+See `TOPHAP.md` for changelog.
+
 # Elevation service
 
 [![CircleCI](https://circleci.com/gh/racemap/elevation-service.svg?style=svg)](https://circleci.com/gh/racemap/elevation-service)

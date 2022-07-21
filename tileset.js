@@ -62,7 +62,7 @@ class S3TileSet extends TileSet {
     this.s3Bucket = s3Options.bucket
     this.s3Prefix = s3Options.prefix
 
-    this.s3 = new aws.S3({})
+    this.s3 = new aws.S3({maxRetries: 25})
   }
 
   s3Get(path) {

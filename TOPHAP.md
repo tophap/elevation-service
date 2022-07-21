@@ -9,3 +9,6 @@
 ## 0.0.3 (2022-07-21)
 * Add constructor with s3 bucket + prefix param instead.
 * Use aws-sdk instead of https to get files. Keeps our bucket private.
+
+## 0.0.4 (2022-07-21)
+* S3 maxRetries=25 (prev. default was 3)

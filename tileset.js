@@ -1,6 +1,7 @@
 const path = require('path');
 const fetch  = require('node-fetch');
 const memoize = require('memoizee');
+const aws = require('aws-sdk')
 const { readFile } = require('fs/promises');
 const { promisify } = require('util');
 const { gunzip } = require('zlib');
@@ -56,14 +57,34 @@ class FileTileSet extends TileSet {
 }
 
 class S3TileSet extends TileSet {
-  constructor(options, s3_base_url) {
+  constructor(options, s3Options) {
     super(options);
-    this.baseUrl = s3_base_url ?? DEFAULT_S3_BASE_URL;
+    this.s3Bucket = s3Options.bucket
+    this.s3Prefix = s3Options.prefix
+
+    this.s3 = new aws.S3({})
+  }
+
+  s3Get(path) {
+    return new Promise((resolve, reject) => {
+      const Key = `${this.s3Prefix}/${path}`
+      const params = {Bucket: this.s3Bucket, Key}
+
+      this.s3.getObject(params, (err, data) => {
+        console.error(params)
+        if (err) {
+          console.error(err, err.stack)
+          reject(err)
+        }
+
+        resolve(data.Body)
+      })
+    })
   }
 
   async _getTile(lat, lng) {
-    // console.log(`${this.baseUrl}/${this.getFilePath(lat, lng)}`);
-    let buffer = await fetch(`${this.baseUrl}/${this.getFilePath(lat, lng)}`).then(r => r.arrayBuffer());
+    // console.error(`${this.getFilePath(lat, lng)}`);
+    let buffer = await this.s3Get(`${this.getFilePath(lat, lng)}`)
     if (this.options.gzip) {
       buffer = Buffer.from(await promisify(gunzip)(buffer));
     }

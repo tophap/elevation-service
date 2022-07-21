@@ -1,10 +1,11 @@
 const path = require('path');
-const fetch  = require('node-fetch');
+const fetch = require('node-fetch');
 const memoize = require('memoizee');
 const aws = require('aws-sdk')
 const { readFile } = require('fs/promises');
 const { promisify } = require('util');
 const { gunzip } = require('zlib');
+const promiseRetry = require('promise-retry');
 
 const HGT = require('./hgt');
 
@@ -62,16 +63,15 @@ class S3TileSet extends TileSet {
     this.s3Bucket = s3Options.bucket
     this.s3Prefix = s3Options.prefix
 
-    this.s3 = new aws.S3({maxRetries: 25})
+    this.s3 = new aws.S3({ maxRetries: 25 })
   }
 
   s3Get(path) {
     return new Promise((resolve, reject) => {
       const Key = `${this.s3Prefix}/${path}`
-      const params = {Bucket: this.s3Bucket, Key}
+      const params = { Bucket: this.s3Bucket, Key }
 
       this.s3.getObject(params, (err, data) => {
-        console.error(params)
         if (err) {
           console.error(err, err.stack)
           reject(err)
@@ -82,9 +82,16 @@ class S3TileSet extends TileSet {
     })
   }
 
+  s3Get_WithRetry(path) {
+    return promiseRetry((retry, number) => {
+      console.error({path, attempt: number})
+      return this.s3Get(path).catch(retry);
+    })
+  }
+
   async _getTile(lat, lng) {
     // console.error(`${this.getFilePath(lat, lng)}`);
-    let buffer = await this.s3Get(`${this.getFilePath(lat, lng)}`)
+    let buffer = await this.s3Get_WithRetry(`${this.getFilePath(lat, lng)}`)
     if (this.options.gzip) {
       buffer = Buffer.from(await promisify(gunzip)(buffer));
     }

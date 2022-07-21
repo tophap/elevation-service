@@ -7,6 +7,8 @@ const { gunzip } = require('zlib');
 
 const HGT = require('./hgt');
 
+const DEFAULT_S3_BASE_URL = 'https://elevation-tiles-prod.s3.amazonaws.com/skadi';
+
 class TileSet {
   constructor(options) {
     this.options = Object.assign(
@@ -54,9 +56,14 @@ class FileTileSet extends TileSet {
 }
 
 class S3TileSet extends TileSet {
+  constructor(s3_base_url, options) {
+    super(options);
+    this.baseUrl = s3_base_url || DEFAULT_S3_BASE_URL;
+  }
+
   async _getTile(lat, lng) {
-    // console.log(`${S3TileSet.baseUrl}/${this.getFilePath(lat, lng)}`);
-    let buffer = await fetch(`${S3TileSet.baseUrl}/${this.getFilePath(lat, lng)}`).then(r => r.arrayBuffer());
+    // console.log(`${this.baseUrl}/${this.getFilePath(lat, lng)}`);
+    let buffer = await fetch(`${this.baseUrl}/${this.getFilePath(lat, lng)}`).then(r => r.arrayBuffer());
     if (this.options.gzip) {
       buffer = Buffer.from(await promisify(gunzip)(buffer));
     }
@@ -64,7 +71,6 @@ class S3TileSet extends TileSet {
     return tile;
   }
 }
-S3TileSet.baseUrl = 'https://elevation-tiles-prod.s3.amazonaws.com/skadi';
 
 TileSet.S3TileSet = S3TileSet;
 TileSet.FileTileSet = FileTileSet;

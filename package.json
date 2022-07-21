@@ -1,15 +1,19 @@
 {
+  "_args": [
+    [
+      "git+https://github.com/tophap/elevation-service.git",
+      "/home/ryan/tophap/data-processing/elevation"
+    ]
+  ],
   "_from": "git+https://github.com/tophap/elevation-service.git",
-  "_id": "elevation-service@0.0.2",
+  "_id": "elevation-service@git+https://github.com/tophap/elevation-service.git#a89c4e9a5efd6a79076c90c17ddb0830669b343c",
   "_inBundle": false,
   "_integrity": "",
   "_location": "/elevation-service",
   "_phantomChildren": {},
   "_requested": {
     "type": "git",
-    "raw": "elevation-service@git+https://github.com/tophap/elevation-service.git",
-    "name": "elevation-service",
-    "escapedName": "elevation-service",
+    "raw": "git+https://github.com/tophap/elevation-service.git",
     "rawSpec": "git+https://github.com/tophap/elevation-service.git",
     "saveSpec": "git+https://github.com/tophap/elevation-service.git",
     "fetchSpec": "https://github.com/tophap/elevation-service.git",
@@ -18,14 +22,13 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "git+https://github.com/tophap/elevation-service.git#d2838fd35dcb84738daf3f336f72c929e82b998a",
-  "_spec": "elevation-service@git+https://github.com/tophap/elevation-service.git",
+  "_resolved": "git+https://github.com/tophap/elevation-service.git#a89c4e9a5efd6a79076c90c17ddb0830669b343c",
+  "_spec": "git+https://github.com/tophap/elevation-service.git",
   "_where": "/home/ryan/tophap/data-processing/elevation",
   "author": {
     "name": "Norman Rzepka",
     "email": "code@normanrz.com"
   },
-  "bundleDependencies": false,
   "dependencies": {
     "aws-sdk": "^2.1179.0",
     "limited-map": "^0.0.1",
@@ -34,7 +37,8 @@
     "micro": "^9.3.2",
     "micro-cors": "^0.1.1",
     "micro-query": "^0.3.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "promise-retry": "^2.0.1"
   },
   "deprecated": false,
   "description": "See `TOPHAP.md` for changelog.",
@@ -49,5 +53,5 @@
     "start": "micro index.js",
     "test": "node test/test.js"
   },
-  "version": "0.0.4"
+  "version": "0.1.0"
 }

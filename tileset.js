@@ -1,5 +1,6 @@
+const fs = require('fs')
 const path = require('path');
-const fetch = require('node-fetch');
+const crypto = require('crypto')
 const memoize = require('memoizee');
 const aws = require('aws-sdk')
 const { readFile } = require('fs/promises');
@@ -82,10 +83,30 @@ class S3TileSet extends TileSet {
     })
   }
 
-  s3Get_WithRetry(path) {
+  async s3Get_WithCache(path) {
+    // local cache directory
+    const prefix = '.cache/elevation'
+    fs.mkdirSync(prefix, {recursive: true})
+
+    // determine local filename
+    const md5 = crypto.createHash('md5').update(path, 'utf8').digest('hex')
+    const localpath = `${prefix}/${md5}`
+
+    // download file if needed
+    if (!fs.existsSync(localpath)) {
+      const body = await this.s3Get(path)
+      fs.writeFileSync(localpath, body)
+    }
+
+    // return cached file
+    return fs.promises.readFile(localpath)
+  }
+
+  s3Get_WithRetry(path, enableCache = true) {
     return promiseRetry((retry, number) => {
       console.error({path, attempt: number})
-      return this.s3Get(path).catch(retry);
+      const fn = enableCache ? this.s3Get_WithCache : this.s3Get
+      return fn.call(this, path).catch(retry);
     })
   }
 

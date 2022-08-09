@@ -9,3 +9,7 @@
 * Use aws-sdk instead of https to get files. Keeps our bucket private.
 * S3 maxRetries=25 (prev. default was 3)
 * wrap S3 retry with node-promise-retry
+
+## 0.2.0 (2022-08-08)
+* Add .cache/elevation folder.
+* Only fetch from S3 when file is not available locally.

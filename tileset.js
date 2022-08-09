@@ -86,7 +86,7 @@ class S3TileSet extends TileSet {
   async s3Get_WithCache(path) {
     // local cache directory
     const prefix = '.cache/elevation'
-    fs.mkdirSync(prefix, {recursive: true})
+    fs.promises.mkdir(prefix, {recursive: true})
 
     // determine local filename
     const md5 = crypto.createHash('md5').update(path, 'utf8').digest('hex')
@@ -95,7 +95,7 @@ class S3TileSet extends TileSet {
     // download file if needed
     if (!fs.existsSync(localpath)) {
       const body = await this.s3Get(path)
-      fs.writeFileSync(localpath, body)
+      await fs.promises.writeFile(localpath, body)
     }
 
     // return cached file

@@ -13,3 +13,7 @@
 ## 0.2.0 (2022-08-08)
 * Add .cache/elevation folder.
 * Only fetch from S3 when file is not available locally.
+
+## 0.2.1 (2022-08-11)
+* Log s3 retry error
+* Fix fs.exists check

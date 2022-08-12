@@ -103,11 +103,11 @@ class S3TileSet extends TileSet {
   }
 
   s3Get_WithRetry(path, enableCache = true) {
-    return promiseRetry((retry, number) => {
-      console.error({path, attempt: number})
+    return promiseRetry((retry, attempt) => {
       const fn = enableCache ? this.s3Get_WithCache : this.s3Get
+
       return fn.call(this, path).catch(error => {
-        console.error(error)
+        console.error({error, path, attempt})
         retry(error)
       });
     })

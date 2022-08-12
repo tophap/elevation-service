@@ -17,3 +17,6 @@
 ## 0.2.1 (2022-08-11)
 * Log s3 retry error
 * Fix fs.exists check
+
+## 0.2.2 (2022-08-12)
+* Fix log only on error for S3 download.

@@ -5,7 +5,7 @@ const memoize = require('memoizee');
 const aws = require('aws-sdk')
 const { readFile } = require('fs/promises');
 const { promisify } = require('util');
-const { gunzip } = require('zlib');
+const Zlib = require('zlib');
 const promiseRetry = require('promise-retry');
 
 const HGT = require('./hgt');
@@ -49,10 +49,8 @@ class FileTileSet extends TileSet {
   }
 
   async _getTile(lat, lng) {
-    let buffer = await readFile(path.join(this._folder, this.getFilePath(lat, lng)));
-    if (this.options.gzip) {
-      buffer = await promisify(gunzip)(buffer);
-    }
+    const body = await readFile(path.join(this._folder, this.getFilePath(lat, lng)));
+    const buffer = await this.optionalGunzip(body)
     const tile = new HGT(buffer, [lat, lng]);
     return tile;
   }
@@ -102,23 +100,32 @@ class S3TileSet extends TileSet {
     return fs.promises.readFile(localpath)
   }
 
+  async optionalGunzip(input) {
+    if (this.options.gzip) {
+        const raw = await promisify(Zlib.gunzip)(input)
+        return Buffer.from(raw)
+    } else {
+      return input
+    }
+  }
+
   s3Get_WithRetry(path, enableCache = true) {
-    return promiseRetry((retry, attempt) => {
+    return promiseRetry(async (retry, attempt) => {
       const fn = enableCache ? this.s3Get_WithCache : this.s3Get
 
-      return fn.call(this, path).catch(error => {
-        console.error({error, path, attempt})
+      try {
+        const body = await fn.call(this, path)
+        return this.optionalGunzip(body)
+      } catch (error) {
+        console.error(error, path, attempt)
         retry(error)
-      });
+      }
     })
   }
 
   async _getTile(lat, lng) {
     // console.error(`${this.getFilePath(lat, lng)}`);
     let buffer = await this.s3Get_WithRetry(`${this.getFilePath(lat, lng)}`)
-    if (this.options.gzip) {
-      buffer = Buffer.from(await promisify(gunzip)(buffer));
-    }
     const tile = new HGT(buffer, [lat, lng]);
     return tile;
   }

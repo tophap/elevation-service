@@ -4,6 +4,14 @@ const { promisify } = require('util');
 const asyncReadFile = promisify(readFile);
 
 function avg(v1, v2, f) {
+  const INT_MAX = 32767
+
+  // Case 1: One pixel is INT_MAX --> return other pixel. Do not interpolate.
+  if (v1 === INT_MAX && v2 !== INT_MAX) return v2
+  if (v2 === INT_MAX && v1 !== INT_MAX) return v1
+
+  // Case 2: Both of the pixels are INT_MAX --> return INT_MAX
+  // Case 3: Normal interpolation
   return v1 + (v2 - v1) * f;
 }
 
@@ -75,23 +83,30 @@ class HGT {
     const v01 = this._rowCol(rowHi, colLow);
     const v1 = avg(v00, v10, colFrac);
     const v2 = avg(v01, v11, colFrac);
+    const vfinal = avg(v1, v2, rowFrac);
 
-    // console.log('row = ' + row);
-    // console.log('col = ' + col);
-    // console.log('rowLow = ' + rowLow);
-    // console.log('rowHi = ' + rowHi);
-    // console.log('rowFrac = ' + rowFrac);
-    // console.log('colLow = ' + colLow);
-    // console.log('colHi = ' + colHi);
-    // console.log('colFrac = ' + colFrac);
-    // console.log('v00 = ' + v00);
-    // console.log('v10 = ' + v10);
-    // console.log('v11 = ' + v11);
-    // console.log('v01 = ' + v01);
-    // console.log('v1 = ' + v1);
-    // console.log('v2 = ' + v2);
+    if (vfinal === 32767) {
+      throw Error('Lossy interpolate failed. No valid pixels in quadrant. (pix != 32767)')
+    }
 
-    return avg(v1, v2, rowFrac);
+    /*
+    console.log('row = ' + row);
+    console.log('col = ' + col);
+    console.log('rowLow = ' + rowLow);
+    console.log('rowHi = ' + rowHi);
+    console.log('rowFrac = ' + rowFrac);
+    console.log('colLow = ' + colLow);
+    console.log('colHi = ' + colHi);
+    console.log('colFrac = ' + colFrac);
+    console.log('v00 = ' + v00);
+    console.log('v10 = ' + v10);
+    console.log('v11 = ' + v11);
+    console.log('v01 = ' + v01);
+    console.log('v1 = ' + v1);
+    console.log('v2 = ' + v2);
+    */
+
+    return vfinal
   }
 
   getElevation(latLng) {

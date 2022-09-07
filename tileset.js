@@ -124,8 +124,8 @@ class S3TileSet extends TileSet {
   }
 
   async _getTile(lat, lng) {
-    // console.error(`${this.getFilePath(lat, lng)}`);
-    let buffer = await this.s3Get_WithRetry(`${this.getFilePath(lat, lng)}`)
+    const tilepath = this.getFilePath(lat, lng)
+    const buffer = await this.s3Get_WithRetry(tilepath)
     const tile = new HGT(buffer, [lat, lng]);
     return tile;
   }

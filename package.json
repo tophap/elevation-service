@@ -53,5 +53,5 @@
     "start": "micro index.js",
     "test": "node test/test.js"
   },
-  "version": "0.2.2"
+  "version": "0.2.3"
 }

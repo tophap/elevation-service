@@ -20,3 +20,6 @@
 
 ## 0.2.2 (2022-08-12)
 * Fix log only on error for S3 download.
+
+## 0.2.3 (2022-09-07)
+* Filter out height=32,767 from interpolation function.

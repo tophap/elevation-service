@@ -89,7 +89,7 @@ class HGT {
       }
 
       offsets.push([...row])
-      console.error(row.map(pair => pair.join(',')).join("\t"))
+      //console.error(row.map(pair => pair.join(',')).join("\t"))
 
       // shift to next row
       ptr[0] = sx
@@ -114,7 +114,7 @@ class HGT {
     // Get elevation for each position
     const coords = HGT.pixel_ring(x, y, radius)
     const values = coords.map(coord => this._rowCol(...coord))
-    console.error(values)
+    //console.error(values)
 
     // Average valid neighbors
     const valid = values.flat().filter(x => x !== INT_MAX)

@@ -1,11 +1,10 @@
 const { readFile } = require('fs');
 const { promisify } = require('util');
-
 const asyncReadFile = promisify(readFile);
 
-function avg(v1, v2, f) {
-  const INT_MAX = 32767
+const INT_MAX = 32767
 
+function avg(v1, v2, f) {
   // Case 1: One pixel is INT_MAX --> return other pixel. Do not interpolate.
   if (v1 === INT_MAX && v2 !== INT_MAX) return v2
   if (v2 === INT_MAX && v1 !== INT_MAX) return v1
@@ -70,6 +69,44 @@ class HGT {
     return this._rowCol(Math.round(row), Math.round(col));
   }
 
+  // Low-resolution interpolation, worst case solution...
+  // Average the valid neighbors (maximum: 8 points).
+  // Visualization: '*' is invalid; so, use neighbor points 'o'
+  // o o o
+  // o * o
+  // o o o
+  static avg_8pt(row, col) {
+    // Closest integer point
+    const x = Math.round(row);
+    const y = Math.round(col);
+
+    console.error(`Warning: falling back to avg_8pt(); Rounded: (${x}, ${y})`)
+
+    const coords = [
+      [[x-1, y-1], [x, y-1], [x+1, y-1]],
+      [[x-1, y], [x, y], [x+1, y]],
+      [[x-1, y+1], [x, y+1], [x+1, y+1]]
+    ]
+    console.error(coords)
+
+    const values = coords.map(row => {
+      return row.map(col => {
+        const [a, b] = col
+        return this._rowCol(a, b)
+      })
+    })
+    console.error(values)
+
+    const valid = values.flat().filter(x => x !== INT_MAX)
+    const avg = valid.reduce((a, b) => a + b, 0) / valid.length
+    console.error({avg, valid})
+    console.error("")
+
+    if (isNaN(avg)) throw Error('avg is NaN')
+
+    return avg
+  }
+
   static bilinear(row, col) {
     const rowLow = Math.floor(row);
     const rowHi = rowLow + 1;
@@ -85,11 +122,8 @@ class HGT {
     const v2 = avg(v01, v11, colFrac);
     const vfinal = avg(v1, v2, rowFrac);
 
-    if (vfinal === 32767) {
-      throw Error('Lossy interpolate failed. No valid pixels in quadrant. (pix != 32767)')
-    }
-
     /*
+    console.log("\n")
     console.log('row = ' + row);
     console.log('col = ' + col);
     console.log('rowLow = ' + rowLow);
@@ -104,9 +138,14 @@ class HGT {
     console.log('v01 = ' + v01);
     console.log('v1 = ' + v1);
     console.log('v2 = ' + v2);
+    console.log('--> vfinal = ' + vfinal);
     */
 
-    return vfinal
+    if (vfinal !== 32767) return vfinal
+
+    // Bilinear interpolation failed, so we fallback to avg_8pt()
+    console.error(`Lossy bilinear failed. No valid pixels in quadrant. (${row},${col})`)
+    return HGT.avg_8pt.call(this, row, col)
   }
 
   getElevation(latLng) {

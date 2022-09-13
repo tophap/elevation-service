@@ -23,3 +23,8 @@
 
 ## 0.2.3 (2022-09-07)
 * Filter out height=32,767 from interpolation function.
+
+## 0.2.4 (2022-09-12)
+* Add avg_8pt() method as a fallback for when all four points of the
+  interpolation quadrant are INT_MAX. Instead, we average the surrounding
+  (valid) eight neighbor points>

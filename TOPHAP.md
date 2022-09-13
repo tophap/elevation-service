@@ -28,3 +28,8 @@
 * Add avg_8pt() method as a fallback for when all four points of the
   interpolation quadrant are INT_MAX. Instead, we average the surrounding
   (valid) eight neighbor points>
+
+## 0.2.5 (2022-09-12)
+* Change avg_8pt() to avg_neighbor() with optional radius parameter. This
+  allows the use of pixel rings of radius=1 and radius=2. Radius=1 will average
+  8 neighbors. Radious=2 will average 24 neighbors.

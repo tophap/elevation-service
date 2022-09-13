@@ -126,6 +126,8 @@ class S3TileSet extends TileSet {
   async _getTile(lat, lng) {
     const tilepath = this.getFilePath(lat, lng)
     const buffer = await this.s3Get_WithRetry(tilepath)
+    // console.log({tilepath})
+    // fs.writeFileSync(`/tmp/${path.basename(tilepath, '.gz')}`, buffer)
     const tile = new HGT(buffer, [lat, lng]);
     return tile;
   }

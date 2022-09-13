@@ -69,42 +69,67 @@ class HGT {
     return this._rowCol(Math.round(row), Math.round(col));
   }
 
+  static pixel_ring(x, y, radius) {
+    // initial position (top-left)
+    const sx = x-radius
+    const sy = y-radius
+    const ptr = [sx, sy]
+
+    // width of square to center on x,y with radius
+    const limit = 2*radius + 1
+
+    const offsets = []
+    for (let j = 0; j < limit; j++) {
+      let row = []
+
+      // produce x-dimension (row)
+      for (let i = 0; i < limit; i++) {
+        row.push([...ptr])
+        ptr[0]++
+      }
+
+      offsets.push([...row])
+      console.error(row.map(pair => pair.join(',')).join("\t"))
+
+      // shift to next row
+      ptr[0] = sx
+      ptr[1]++
+    }
+
+    return offsets.flat(1)
+  }
+
   // Low-resolution interpolation, worst case solution...
-  // Average the valid neighbors (maximum: 8 points).
+  // Average the valid neighbors (e.g. 8 points).
   // Visualization: '*' is invalid; so, use neighbor points 'o'
   // o o o
   // o * o
   // o o o
-  static avg_8pt(row, col) {
+  static avg_neighbor(row, col, radius=1) {
     // Closest integer point
     const x = Math.round(row);
     const y = Math.round(col);
+    console.error(`Warning: falling back to avg_neighbor(); Rounded: (${x}, ${y})`)
 
-    console.error(`Warning: falling back to avg_8pt(); Rounded: (${x}, ${y})`)
-
-    const coords = [
-      [[x-1, y-1], [x, y-1], [x+1, y-1]],
-      [[x-1, y], [x, y], [x+1, y]],
-      [[x-1, y+1], [x, y+1], [x+1, y+1]]
-    ]
-    console.error(coords)
-
-    const values = coords.map(row => {
-      return row.map(col => {
-        const [a, b] = col
-        return this._rowCol(a, b)
-      })
-    })
+    // Get elevation for each position
+    const coords = HGT.pixel_ring(x, y, radius)
+    const values = coords.map(coord => this._rowCol(...coord))
     console.error(values)
 
+    // Average valid neighbors
     const valid = values.flat().filter(x => x !== INT_MAX)
     const avg = valid.reduce((a, b) => a + b, 0) / valid.length
     console.error({avg, valid})
     console.error("")
 
-    if (isNaN(avg)) throw Error('avg is NaN')
+    // Success
+    if (!isNaN(avg)) return avg
 
-    return avg
+    // Failed at radius=2. Aborting.
+    if (radius == 2) throw Error('avg is NaN at radius=2')
+
+    // Failed at radius=1. Try radius=2
+    return HGT.avg_neighbor.call(this, row, col, 2)
   }
 
   static bilinear(row, col) {
@@ -143,9 +168,9 @@ class HGT {
 
     if (vfinal !== 32767) return vfinal
 
-    // Bilinear interpolation failed, so we fallback to avg_8pt()
+    // Bilinear interpolation failed, so we fallback to avg_neighbor()
     console.error(`Lossy bilinear failed. No valid pixels in quadrant. (${row},${col})`)
-    return HGT.avg_8pt.call(this, row, col)
+    return HGT.avg_neighbor.call(this, row, col)
   }
 
   getElevation(latLng) {
